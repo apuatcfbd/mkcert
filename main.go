@@ -67,6 +67,9 @@ const advancedUsage = `Advanced options:
 
 	-org
 	    Certification issuer org name.
+
+	-orgDst
+	    Certification requested org name.
 	
 	-expYrs
 	    Certificate expiry years.
