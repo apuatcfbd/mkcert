@@ -65,6 +65,13 @@ const advancedUsage = `Advanced options:
 	    Generate a certificate based on the supplied CSR. Conflicts with
 	    all other flags and arguments except -install and -cert-file.
 
+	-org
+	    Certification issuer org name.
+	
+	-expYrs
+	    Certificate expiry years.
+	
+
 	-CAROOT
 	    Print the CA certificate and key storage location.
 
@@ -76,7 +83,6 @@ const advancedUsage = `Advanced options:
 	    A comma-separated list of trust stores to install the local
 	    root CA into. Options are: "system", "java" and "nss" (includes
 	    Firefox). Autodetected by default.
-
 `
 
 // Version can be set at link time to override debug.BuildInfo.Main.Version,
@@ -103,6 +109,9 @@ func main() {
 		keyFileFlag   = flag.String("key-file", "", "")
 		p12FileFlag   = flag.String("p12-file", "", "")
 		versionFlag   = flag.Bool("version", false, "")
+		orgFlag       = flag.String("org", "Snebtaf", "")
+		orgDstFlag    = flag.String("orgDst", "", "")
+		expiryYrsFlag = flag.Int("expYrs", 1, "")
 	)
 	flag.Usage = func() {
 		fmt.Fprint(flag.CommandLine.Output(), shortUsage)
@@ -133,6 +142,9 @@ func main() {
 		fmt.Println(getCAROOT())
 		return
 	}
+	if *expiryYrsFlag > 10 {
+		log.Fatalln("Expiry can be maximum 10 years")
+	}
 	if *installFlag && *uninstallFlag {
 		log.Fatalln("ERROR: you can't set -install and -uninstall at the same time")
 	}
@@ -146,6 +158,7 @@ func main() {
 		installMode: *installFlag, uninstallMode: *uninstallFlag, csrPath: *csrFlag,
 		pkcs12: *pkcs12Flag, ecdsa: *ecdsaFlag, client: *clientFlag,
 		certFile: *certFileFlag, keyFile: *keyFileFlag, p12File: *p12FileFlag,
+		orgName: *orgFlag, orgDst: *orgDstFlag, expiryYears: *expiryYrsFlag,
 	}).Run(flag.Args())
 }
 
@@ -156,7 +169,8 @@ type mkcert struct {
 	installMode, uninstallMode bool
 	pkcs12, ecdsa, client      bool
 	keyFile, certFile, p12File string
-	csrPath                    string
+	csrPath, orgName, orgDst   string
+	expiryYears                int
 
 	CAROOT string
 	caCert *x509.Certificate
